@@ -1,12 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from schemas import MatchScoreboardResponse
+from schemas import ScoreboardRequest, MatchScoreboardResponse
 from services import calculate_scoreboard
 
 app = FastAPI(
-    title="Sports Utility API",
-    description="Live Match Scoreboard & Cricket Microservice",
-    version="1.0.0"
+    title="Match Scoreboard API - Phase 2",
+    description="Live Match Scoreboard & Cricket Microservice accepting real-time dynamic ball stream payloads.",
+    version="2.0.0"
 )
 
 app.add_middleware(
@@ -19,15 +19,15 @@ app.add_middleware(
 
 @app.get("/", tags=["Health Check"])
 def root():
-    return {"message": "API is live"}
+    return {"message": "Phase 2 Match Scoreboard API is live"}
 
 @app.get("/health", tags=["Health Check"])
 def health():
     return {"status": "ok"}
 
-@app.get("/scoreboard/{match_id}", response_model=MatchScoreboardResponse, tags=["Scoreboard"])
-def get_match_scoreboard(match_id: str):
-    result = calculate_scoreboard(match_id)
-    if not result:
-        raise HTTPException(status_code=404, detail=f"Match '{match_id}' not found.")
-    return result
+@app.post("/scoreboard", response_model=MatchScoreboardResponse, tags=["Scoreboard"])
+def get_match_scoreboard(payload: ScoreboardRequest):
+    try:
+        return calculate_scoreboard(payload)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
